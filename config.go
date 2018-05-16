@@ -62,9 +62,5 @@ func saveConfig() error {
 	e := json.NewEncoder(f)
 	e.SetIndent("", "    ")
 
-	if err = e.Encode(config); err != nil {
-		return err
-	}
-
-	return nil
+	return e.Encode(config)
 }
