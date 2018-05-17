@@ -39,11 +39,11 @@ The bot needs the following permissions to operate:
 
 The bot currently knows two commands, both require the user to have the `MANAGE_CHANNELS` permission serverwide:
 
-##### !voicelink <voiceChannelID> <textChannelID|textChannelMention>
+##### !voicelink \<voiceChannelID> <textChannelID|textChannelMention>
 This command will make a link between the specified voice chat channel and the specified text channel.  
 Example: `!voicelink 118109806723727364 #voice-chat`
 
-##### !voiceunlink <voiceChannelID>
+##### !voiceunlink \<voiceChannelID>
 This command will remove link for the specified voice channel.  
 Example: `!voiceunlink 118109806723727364`
 
