@@ -46,3 +46,6 @@ Example: `!voicelink 118109806723727364 #voice-chat`
 ##### !voiceunlink <voiceChannelID>
 This command will remove link for the specified voice channel.  
 Example: `!voiceunlink 118109806723727364`
+
+##### !voicelinklist
+This command will list all currently known and active channel links.

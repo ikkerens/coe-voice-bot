@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -16,19 +17,6 @@ func onCommandEvent(discord *discordgo.Session, event *discordgo.MessageCreate) 
 		return
 	}
 
-	args := strings.Split(event.Content, " ")
-
-	switch strings.ToLower(args[0]) {
-	case "!voicelink":
-		linkCommand(discord, event, args[1:])
-	case "!voiceunlink":
-		unlinkCommand(discord, event, args[1:])
-	}
-
-	// Silently fail if there's an unknown command
-}
-
-func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, args []string) {
 	// Check if the user has the MANAGE_CHANNELS permission
 	serverPerms, _ := getPermissionsFromMessage(discord, event)
 	if serverPerms&discordgo.PermissionManageChannels != discordgo.PermissionManageChannels {
@@ -36,9 +24,24 @@ func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, arg
 		return
 	}
 
+	args := strings.Split(event.Content, " ")
+
+	switch strings.ToLower(args[0]) {
+	case "!voicelink":
+		linkCommand(discord, event, args[1:])
+	case "!voiceunlink":
+		unlinkCommand(discord, event, args[1:])
+	case "!voicelinklist":
+		list(discord, event)
+	}
+
+	// Silently fail if there's an unknown command
+}
+
+func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, args []string) {
 	// Check if the command was invoked correctly
 	if len(args) != 2 {
-		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" Usage of this command:\n"+
+		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention() + " Usage of this command:\n"+
 			"```\n"+
 			"!voicelink <voiceChannelID> <textChannelID|textChannelMention>\n"+
 			"```")
@@ -61,7 +64,7 @@ func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, arg
 
 	// Ensure they're of the same type
 	if voice.Type != discordgo.ChannelTypeGuildVoice || text.Type != discordgo.ChannelTypeGuildText {
-		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" The first argument needs to be a voice channel, "+
+		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention() + " The first argument needs to be a voice channel, "+
 			"the second argument needs to be a text channel.")
 		return
 	}
@@ -75,7 +78,7 @@ func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, arg
 
 	// Make sure it was invoked in the correct guild
 	if channel.GuildID != voice.GuildID || channel.GuildID != text.GuildID {
-		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" The channels provided both need"+
+		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention() + " The channels provided both need"+
 			"to be in the same server as where you execute the command.")
 	}
 
@@ -91,8 +94,8 @@ func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, arg
 	go saveConfig()
 
 	// Send a confirmation
-	discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" Success! I've linked the voice channel "+
-		voice.Name+" to the text channel "+text.Mention()+".")
+	discord.ChannelMessageSend(event.ChannelID, event.Author.Mention() + " Success! I've linked the voice channel "+
+		voice.Name+ " to the text channel "+ text.Mention()+ ".")
 
 	// And trigger a guild update
 	guild, err := getGuild(discord, channel.GuildID)
@@ -104,16 +107,9 @@ func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, arg
 }
 
 func unlinkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, args []string) {
-	// Check if the user has the MANAGE_CHANNELS permission
-	serverPerms, _ := getPermissionsFromMessage(discord, event)
-	if serverPerms&discordgo.PermissionManageChannels != discordgo.PermissionManageChannels {
-		// Ignore
-		return
-	}
-
 	// Check if the command was invoked correctly
 	if len(args) != 1 {
-		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" Usage of this command:\n"+
+		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention() + " Usage of this command:\n"+
 			"```\n"+
 			"!voiceunlink <voiceChannelID>\n"+
 			"```")
@@ -133,7 +129,7 @@ func unlinkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, a
 	// Check if this guild even has any registered channels
 	channels, guildKnown := config.Guilds[channel.GuildID]
 	if !guildKnown {
-		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" I have no registered channels for this server.")
+		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" I know no registered channels for this server.")
 		return
 	}
 
@@ -162,4 +158,46 @@ func unlinkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, a
 	}
 
 	go onGuildUpdate(discord, &discordgo.GuildCreate{Guild: guild})
+}
+
+func list(discord *discordgo.Session, event *discordgo.MessageCreate) {
+	// Get the channel the command was invoked in
+	channel, err := getChannel(discord, event.ChannelID)
+	if err != nil {
+		log.Println("Could not fetch channel from despite us being able to earlier")
+		return
+	}
+
+	configMutex.RLock()
+	defer configMutex.RUnlock()
+
+	channels, guildKnown := config.Guilds[channel.GuildID]
+	if !guildKnown {
+		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" I know no registered channels for this server.")
+		return
+	}
+
+	description := event.Author.Mention() + "These are the voice channels I have currently linked to text channels:\n"
+	found := false
+	for voiceID, textID := range channels {
+		voice, err := getChannel(discord, voiceID)
+		if err != nil {
+			continue // Ignore, invalid link
+		}
+
+		text, err := getChannel(discord, textID)
+		if err != nil {
+			continue // Ignore, invalid link
+		}
+
+		found = true
+		description += fmt.Sprintf("\nThe voice channel \"%s\" (%s) is linked to %s (%s).", voice.Name, voice.ID, text.Mention(), text.ID)
+	}
+
+	if !found {
+		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" I know no registered channels for this server.")
+		return
+	}
+
+	discord.ChannelMessageSend(event.ChannelID, description)
 }
