@@ -33,7 +33,7 @@ $GOPATH/bin/coe-voice-bot
 
 ## Usage
 The bot needs the following permissions to operate:
-* `MANAGE_CHANNELS`
+* `MANAGE_ROLES`
 * The ability to see the channels it needs to manage.
 * The ability to send messages in the channel commands are executed in, to provide meaningful error messages.
 
