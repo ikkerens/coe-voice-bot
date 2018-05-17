@@ -8,8 +8,11 @@ import (
 
 func init() {
 	discord.AddHandler(onGuildUpdate)
+	discord.AddHandler(onChannelRemove)
 }
 
+// onGuildUpdate is responsible for ensuring the current permission state is up to date with all voice states.
+// It is called during bot startup & after executing linking commands
 func onGuildUpdate(discord *discordgo.Session, newGuild *discordgo.GuildCreate) {
 	configMutex.RLock()
 	defer configMutex.RUnlock()
@@ -32,7 +35,7 @@ func onGuildUpdate(discord *discordgo.Session, newGuild *discordgo.GuildCreate) 
 	for _, textChannelID := range guild {
 		textChannel, err := getChannel(discord, textChannelID)
 		if err != nil {
-			log.Println("Channel exists in GuildCreate, but not in state.")
+			log.Println("Channel exists in config, but not in state.")
 			continue
 		}
 
@@ -52,5 +55,46 @@ func onGuildUpdate(discord *discordgo.Session, newGuild *discordgo.GuildCreate) 
 				UserID:  overwrite.ID,
 			}})
 		}
+	}
+}
+
+// onChannelRemove is responsible for maintaining our config state if one of the linked channel is deleted.
+func onChannelRemove(discord *discordgo.Session, event *discordgo.ChannelDelete) {
+	// Get a write lock
+	configMutex.Lock()
+	defer configMutex.Unlock()
+
+	// Check if we know this guild in our config
+	channels, guildKnown := config.Guilds[event.GuildID]
+	if !guildKnown {
+		return
+	}
+
+	updated := false
+
+	// If the channel ID matches any of the ones we know, remove the link
+	for voice, text := range channels {
+		if event.ID == voice || event.ID == text {
+			delete(channels, voice)
+			updated = true
+		}
+	}
+
+	if updated {
+		// If that was the last channel in this guild, delete the guild too.
+		if len(channels) == 0 {
+			delete(config.Guilds, event.GuildID)
+		}
+
+		go saveConfig()
+
+		// And trigger a guild update if needed
+		guild, err := getGuild(discord, event.GuildID)
+		if err != nil {
+			log.Println("Couldn't fetch guild.", err)
+			return
+		}
+
+		go onGuildUpdate(discord, &discordgo.GuildCreate{Guild: guild})
 	}
 }
