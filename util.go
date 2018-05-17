@@ -64,9 +64,9 @@ func getGuildMember(discord *discordgo.Session, guildID, userID snowflake) (*dis
 	return member, nil
 }
 
-// GetRole will attempt to obtain a role instance for this role
+// getRole will attempt to obtain a role instance for this role
 // Will err if the given ID is not a role in the guild.
-func GetRole(discord *discordgo.Session, guildID, roleID snowflake) (*discordgo.Role, error) {
+func getRole(discord *discordgo.Session, guildID, roleID snowflake) (*discordgo.Role, error) {
 	role, err := discord.State.Role(guildID, roleID)
 	if err == nil {
 		return role, nil
@@ -87,29 +87,6 @@ func GetRole(discord *discordgo.Session, guildID, roleID snowflake) (*discordgo.
 	return nil, errors.New("role does not exist or is not part of that guild")
 }
 
-// getOverwrite will attempt to obtain the PermissionOverwrite instance for the target (Role, Member or User)
-// Will return nil if no such overwrite exists
-func getOverwrite(channel *discordgo.Channel, target interface{}) *discordgo.PermissionOverwrite {
-	var id snowflake
-	var typ string
-
-	switch t := target.(type) {
-	case *discordgo.Role:
-		id = t.ID
-		typ = "role"
-	case *discordgo.Member:
-		id = t.User.ID
-		typ = "user"
-	case *discordgo.User:
-		id = t.ID
-		typ = "user"
-	default:
-		panic(errors.New("invalid overwrite target type"))
-	}
-
-	return getOverwriteByID(channel, id, typ)
-}
-
 // getOverwriteByID will attempt to obtain the PermissionOverwrite instance for the given ID and type ("role" or "user")
 // Will return nil if no such overwrite exists
 func getOverwriteByID(channel *discordgo.Channel, id snowflake, typ string) *discordgo.PermissionOverwrite {
@@ -128,14 +105,14 @@ func computeBasePermissions(discord *discordgo.Session, member *discordgo.Member
 		return discordgo.PermissionAll, nil
 	}
 
-	everyone, err := GetRole(discord, guild.ID, guild.ID)
+	everyone, err := getRole(discord, guild.ID, guild.ID)
 	if err != nil {
 		return 0, err
 	}
 
 	permissions := everyone.Permissions
 	for _, roleID := range member.Roles {
-		role, err := GetRole(discord, guild.ID, roleID)
+		role, err := getRole(discord, guild.ID, roleID)
 		if err != nil {
 			return 0, err
 		}
@@ -151,17 +128,12 @@ func computeBasePermissions(discord *discordgo.Session, member *discordgo.Member
 }
 
 // computeOverwrites calculates the permissions a channel member has, given the guilds base permissions
-func computeOverwrites(discord *discordgo.Session, basePermissions int, member *discordgo.Member, channel *discordgo.Channel) (int, error) {
+func computeOverwrites(basePermissions int, member *discordgo.Member, channel *discordgo.Channel) (int, error) {
 	if basePermissions&discordgo.PermissionAdministrator == discordgo.PermissionAdministrator {
 		return discordgo.PermissionAll, nil
 	}
 
-	everyone, err := GetRole(discord, channel.GuildID, channel.GuildID)
-	if err != nil {
-		return 0, err
-	}
-
-	everyoneOverwrite := getOverwrite(channel, everyone)
+	everyoneOverwrite := getOverwriteByID(channel, channel.GuildID, "role")
 	if everyoneOverwrite != nil {
 		basePermissions &= ^everyoneOverwrite.Deny
 		basePermissions |= everyoneOverwrite.Allow
@@ -213,7 +185,7 @@ func getPermissionsFromMessage(discord *discordgo.Session, event *discordgo.Mess
 		return 0, 0
 	}
 
-	channel, err = computeOverwrites(discord, server, member, channelI)
+	channel, err = computeOverwrites(server, member, channelI)
 	if err != nil {
 		log.Println("Could not fetch permissions for channel", err)
 		return 0, 0
