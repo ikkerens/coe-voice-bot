@@ -8,6 +8,7 @@ import (
 
 func init() {
 	discord.AddHandler(onGuildUpdate)
+	discord.AddHandler(onGuildRemove)
 	discord.AddHandler(onChannelRemove)
 }
 
@@ -56,6 +57,19 @@ func onGuildUpdate(discord *discordgo.Session, newGuild *discordgo.GuildCreate) 
 			}})
 		}
 	}
+}
+
+func onGuildRemove(_ *discordgo.Session, event *discordgo.GuildDelete) {
+	configMutex.Lock()
+	defer configMutex.Unlock()
+
+	_, guildKnown := config.Guilds[event.ID]
+	if !guildKnown {
+		return
+	}
+
+	delete(config.Guilds, event.ID)
+	go saveConfig()
 }
 
 // onChannelRemove is responsible for maintaining our config state if one of the linked channel is deleted.
