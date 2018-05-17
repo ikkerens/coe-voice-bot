@@ -41,7 +41,7 @@ func onCommandEvent(discord *discordgo.Session, event *discordgo.MessageCreate) 
 func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, args []string) {
 	// Check if the command was invoked correctly
 	if len(args) != 2 {
-		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention() + " Usage of this command:\n"+
+		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" Usage of this command:\n"+
 			"```\n"+
 			"!voicelink <voiceChannelID> <textChannelID|textChannelMention>\n"+
 			"```")
@@ -64,7 +64,7 @@ func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, arg
 
 	// Ensure they're of the same type
 	if voice.Type != discordgo.ChannelTypeGuildVoice || text.Type != discordgo.ChannelTypeGuildText {
-		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention() + " The first argument needs to be a voice channel, "+
+		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" The first argument needs to be a voice channel, "+
 			"the second argument needs to be a text channel.")
 		return
 	}
@@ -78,7 +78,7 @@ func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, arg
 
 	// Make sure it was invoked in the correct guild
 	if channel.GuildID != voice.GuildID || channel.GuildID != text.GuildID {
-		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention() + " The channels provided both need"+
+		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" The channels provided both need"+
 			"to be in the same server as where you execute the command.")
 	}
 
@@ -94,8 +94,8 @@ func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, arg
 	go saveConfig()
 
 	// Send a confirmation
-	discord.ChannelMessageSend(event.ChannelID, event.Author.Mention() + " Success! I've linked the voice channel "+
-		voice.Name+ " to the text channel "+ text.Mention()+ ".")
+	discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" Success! I've linked the voice channel "+
+		voice.Name+" to the text channel "+text.Mention()+".")
 
 	// And trigger a guild update
 	guild, err := getGuild(discord, channel.GuildID)
@@ -109,7 +109,7 @@ func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, arg
 func unlinkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, args []string) {
 	// Check if the command was invoked correctly
 	if len(args) != 1 {
-		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention() + " Usage of this command:\n"+
+		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" Usage of this command:\n"+
 			"```\n"+
 			"!voiceunlink <voiceChannelID>\n"+
 			"```")
