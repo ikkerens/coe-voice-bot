@@ -7,7 +7,7 @@ communicate with those that do not have a microphone available.
 This bot is not hosted anywhere (so no invite link), it is expected for you to host & run it yourself.
 
 ## Building
-This application is made using [the Go Language](https://golang.org/), which has to be installed to your PATH in order for these commands to work.
+This application is made using [the Go Language](https://golang.org/), version 1.9+, which has to be installed to your PATH in order for these commands to work.
 Most linux distributions have at least version 1.6 installed in their package repositories under the names `golang` or `golang-go`.  
 *If you do not have the GOPATH environment variable configured, it will default to `$HOME/go` on unix-like.*
 
