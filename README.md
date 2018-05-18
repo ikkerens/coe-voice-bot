@@ -8,7 +8,8 @@ This bot is not hosted anywhere (so no invite link), it is expected for you to h
 
 ## Building
 This application is made using [the Go Language](https://golang.org/), which has to be installed to your PATH in order for these commands to work.
-*If you do not have the GOPATH environment variable configured, it will default to `$HOME/go` on unix-like and `%USERPROFILE%\go` on windows.*
+Most linux distributions have at least version 1.6 installed in their package repositories under the names `golang` or `golang-go`.  
+*If you do not have the GOPATH environment variable configured, it will default to `$HOME/go` on unix-like.*
 
 The two commands below will download all dependencies and then install the bot binary to `$GOPATH/bin`
 ```sh
@@ -21,12 +22,6 @@ go install github.com/ikkerens/coe-voice-bot
 ```
 
 ## Running
-Windows:
-```cmd
-SET TOKEN="PASTEYOURTOKENHERE"
-%GOPATH%\bin\coe-voice-bot.exe
-```
-
 Unix-like:
 ```sh
 export TOKEN=PASTEYOURTOKENHERE
