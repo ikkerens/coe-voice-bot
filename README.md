@@ -1,4 +1,4 @@
-# Chronicles of Elyria voice text channel bot [![Go Report Card](https://goreportcard.com/badge/github.com/ikkerens/coe-voice-bot)](https://goreportcard.com/report/github.com/ikkerens/coe-voice-bot) 
+# Chronicles of Elyria voice text channel bot [![Build Status](https://travis-ci.org/ikkerens/coe-voice-bot.svg?branch=master)](https://travis-ci.org/ikkerens/coe-voice-bot) [![Go Report Card](https://goreportcard.com/badge/github.com/ikkerens/coe-voice-bot)](https://goreportcard.com/report/github.com/ikkerens/coe-voice-bot) 
 
 This bot is originally made for use in the [Chronicles of Elyria discord server](https://discord.gg/chroniclesofelyria).  
 It allows anyone with the `MANAGE_CHANNELS` permission to link voice and text channels to allow people in voice to
