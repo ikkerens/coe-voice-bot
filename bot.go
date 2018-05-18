@@ -29,7 +29,7 @@ func init() {
 }
 
 func main() {
-	defer log.Println("Succesfully disconnected.")
+	defer log.Println("Successfully disconnected.")
 
 	// Open the websocket connection
 	if err := discord.Open(); err != nil {
@@ -37,7 +37,7 @@ func main() {
 	}
 	defer discord.Close()
 
-	log.Println("Bot has succesfully connected to Discord, now accepting events...")
+	log.Println("Bot has successfully connected to Discord, now accepting events...")
 	log.Println("Use Ctrl+C to shut the bot down.")
 	defer log.Println("Shutting down bot...")
 
