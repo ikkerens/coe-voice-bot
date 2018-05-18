@@ -160,6 +160,8 @@ func computeOverwrites(basePermissions int, member *discordgo.Member, channel *d
 	return basePermissions, nil
 }
 
+// getPermissionsFromMessage is a convenience method that gathers the server and channel permissions for the
+// MessageCreate event.
 func getPermissionsFromMessage(discord *discordgo.Session, event *discordgo.MessageCreate) (server, channel int) {
 	channelI, err := getChannel(discord, event.ChannelID)
 	if err != nil {
@@ -192,4 +194,15 @@ func getPermissionsFromMessage(discord *discordgo.Session, event *discordgo.Mess
 	}
 
 	return
+}
+
+// getUserName is a convenience function that will attempt to obtain the users username and discriminator for logging
+// otherwise it will just return the user ID
+func getUserName(discord *discordgo.Session, guildID, userID snowflake) string {
+	member, err := discord.State.Member(guildID, userID)
+	if err != nil {
+		return "ID " + userID
+	}
+
+	return member.User.String()
 }

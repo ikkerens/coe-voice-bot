@@ -19,6 +19,7 @@ func init() {
 		log.Fatal("Please provide a Discord bot token through the \"TOKEN\" environment variable.")
 	}
 
+	log.Println("Initializing bot...")
 	// Initialize the bot session
 	var err error
 	discord, err = discordgo.New("Bot " + os.Getenv("TOKEN"))
@@ -28,11 +29,17 @@ func init() {
 }
 
 func main() {
+	defer log.Println("Succesfully disconnected.")
+
 	// Open the websocket connection
 	if err := discord.Open(); err != nil {
 		log.Fatal(err)
 	}
 	defer discord.Close()
+
+	log.Println("Bot has succesfully connected to Discord, now accepting events...")
+	log.Println("Use Ctrl+C to shut the bot down.")
+	defer log.Println("Shutting down bot...")
 
 	// Wait for application exit from an OS signal (Ctrl+C for example)
 	sc := make(chan os.Signal, 1)

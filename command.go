@@ -82,6 +82,8 @@ func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, arg
 			"to be in the same server as where you execute the command.")
 	}
 
+	log.Printf("User %s has invoked command: %s\n", event.Author.String(), event.Content)
+
 	// Add it to the list
 	configMutex.Lock()
 	list, exists := config.Guilds[channel.GuildID]
@@ -140,6 +142,8 @@ func unlinkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, a
 		return
 	}
 
+	log.Printf("User %s has invoked command: %s\n", event.Author.String(), event.Content)
+
 	// Remove it from the list
 	delete(channels, args[0])
 	if len(channels) == 0 {
@@ -176,6 +180,8 @@ func list(discord *discordgo.Session, event *discordgo.MessageCreate) {
 		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" I know no registered channels for this server.")
 		return
 	}
+
+	log.Printf("User %s has invoked command: %s\n", event.Author.String(), event.Content)
 
 	description := event.Author.Mention() + "These are the voice channels I have currently linked to text channels:\n"
 	found := false

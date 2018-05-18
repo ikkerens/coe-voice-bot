@@ -20,12 +20,9 @@ func onVoiceStateUpdate(discord *discordgo.Session, voiceState *discordgo.VoiceS
 	}
 
 	// First, find the channels the user already has overwrites for
-	for _, channelID := range guild {
-		if channelID == voiceState.ChannelID && !voiceState.Deaf && !voiceState.SelfDeaf {
-			continue // We're about to grant access to this channel, so no need to remove it
-		}
-
-		channel, err := getChannel(discord, channelID)
+	toRemove := make(map[*discordgo.Channel]bool)
+	for voiceID, textID := range guild {
+		channel, err := getChannel(discord, textID)
 		if err != nil {
 			log.Println("could not check channel overwrites", err)
 			continue
@@ -36,7 +33,25 @@ func onVoiceStateUpdate(discord *discordgo.Session, voiceState *discordgo.VoiceS
 			continue // No overwrites in place, don't need to remove
 		}
 
-		discord.ChannelPermissionDelete(channelID, overwrite.ID)
+		if voiceID == voiceState.ChannelID && !voiceState.Deaf && !voiceState.SelfDeaf {
+			toRemove[channel] = false // We're about to grant access to this channel, so no need to remove it
+			continue
+		}
+
+		_, exists := toRemove[channel]
+		if !exists {
+			toRemove[channel] = true
+		}
+	}
+
+	// After finding them, actually remove them
+	for text, remove := range toRemove {
+		if remove {
+			log.Printf("Removing override for user %s in channel #%s.\n", getUserName(discord, voiceState.GuildID, voiceState.UserID), text.Name)
+			if err := discord.ChannelPermissionDelete(text.ID, voiceState.UserID); err != nil {
+				log.Println("Could not remove override.", err)
+			}
+		}
 	}
 
 	// Second, if the user joins a channel, give them access to the linked channel, if registered
@@ -59,9 +74,13 @@ func onVoiceStateUpdate(discord *discordgo.Session, voiceState *discordgo.VoiceS
 		log.Println("Could not fetch voice-chat channel", err)
 		return
 	}
-	overwrite := getOverwriteByID(text, voiceState.UserID, "member")
 
+	// Only set read permissions if this member doesn't already have an overwrite
+	overwrite := getOverwriteByID(text, voiceState.UserID, "member")
 	if overwrite == nil {
-		discord.ChannelPermissionSet(textID, voiceState.UserID, "member", discordgo.PermissionReadMessages, 0)
+		log.Printf("Creating override for user %s in channel #%s.\n", getUserName(discord, voiceState.GuildID, voiceState.UserID), text.Name)
+		if err = discord.ChannelPermissionSet(textID, voiceState.UserID, "member", discordgo.PermissionReadMessages, 0); err != nil {
+			log.Println("Could not create channel override.", err)
+		}
 	}
 }

@@ -37,7 +37,7 @@ func init() {
 	}
 
 	// Or else open it
-	f, err := os.Open(configFileName)
+	f, err := os.OpenFile(configFileName, os.O_RDONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}

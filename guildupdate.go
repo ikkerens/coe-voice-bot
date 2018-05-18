@@ -59,6 +59,7 @@ func onGuildUpdate(discord *discordgo.Session, newGuild *discordgo.GuildCreate) 
 	}
 }
 
+// onGuildRemove is responsible for maintaining our config state if the bot is removed from a guild
 func onGuildRemove(_ *discordgo.Session, event *discordgo.GuildDelete) {
 	configMutex.Lock()
 	defer configMutex.Unlock()
