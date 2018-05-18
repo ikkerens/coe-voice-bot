@@ -11,22 +11,24 @@ This application is made using [the Go Language](https://golang.org/), which has
 *If you do not have the GOPATH environment variable configured, it will default to `$HOME/go` on unix-like and `%USERPROFILE%\go` on windows.*
 
 The two commands below will download all dependencies and then install the bot binary to `$GOPATH/bin`
-```
-go get github.com/ikkerens/coe-voice-bot
-cd $GOPATH/src/github.com/bwmarrin/discordgo # Or cd %GOPATH%\src\github.com\bwmarrin\discordgo on Windows
-git checkout develop # This bot uses some not-yet-released features of the DiscordGo library.
+```sh
+# Clone the project and get all dependencies without building
+go get -d github.com/ikkerens/coe-voice-bot
+# Switch the DiscordGo library to the develop branch
+(cd $GOPATH/src/github.com/bwmarrin/discordgo; git checkout develop)
+# Install the binary to $GOPATH/bin
 go install github.com/ikkerens/coe-voice-bot
 ```
 
 ## Running
 Windows:
-```
+```cmd
 SET TOKEN="PASTEYOURTOKENHERE"
 %GOPATH%\bin\coe-voice-bot.exe
 ```
 
 Unix-like:
-```
+```sh
 export TOKEN=PASTEYOURTOKENHERE
 $GOPATH/bin/coe-voice-bot
 ```
