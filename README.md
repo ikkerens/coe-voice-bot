@@ -31,6 +31,28 @@ export TOKEN=PASTEYOURTOKENHERE
 $GOPATH/bin/coe-voice-bot
 ```
 
+Systemd-service:
+```
+[Unit]
+Description=CoE Voice Bot
+Wants=network.target
+After=multi-user.target network.target
+
+[Service]
+# It is recommended to change the user to something less privileged.
+# The user will need writing permission to the WorkingDirectory
+User=root
+Type=simple
+Environment=TOKEN=PASTEYOURTOKENHERE
+WorkingDirectory=/etc/coe-voice-bot
+ExecStart=/path/to/binary/coe-voice-bot
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ## Usage
 The bot needs the following permissions to operate:
 * `MANAGE_ROLES`
