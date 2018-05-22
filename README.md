@@ -37,7 +37,7 @@ After=multi-user.target network.target
 
 [Service]
 # It is recommended to change the user to something less privileged.
-# The user will need writing permission to the WorkingDirectory
+# The user will need writing permission to the WorkingDirectory to write config.json containing all active links.
 User=root
 Type=simple
 Environment=TOKEN=PASTEYOURTOKENHERE
