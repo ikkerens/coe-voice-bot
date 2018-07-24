@@ -80,6 +80,7 @@ func linkCommand(discord *discordgo.Session, event *discordgo.MessageCreate, arg
 	if channel.GuildID != voice.GuildID || channel.GuildID != text.GuildID {
 		discord.ChannelMessageSend(event.ChannelID, event.Author.Mention()+" The channels provided both need"+
 			"to be in the same server as where you execute the command.")
+		return
 	}
 
 	log.Printf("User %s has invoked command: %s\n", event.Author.String(), event.Content)
