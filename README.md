@@ -15,8 +15,6 @@ The two commands below will download all dependencies and then install the bot b
 ```sh
 # Clone the project and get all dependencies without building
 go get -d github.com/ikkerens/coe-voice-bot
-# Switch the DiscordGo library to the develop branch
-(cd $GOPATH/src/github.com/bwmarrin/discordgo; git checkout develop)
 # Install the binary to $GOPATH/bin
 go install github.com/ikkerens/coe-voice-bot
 ```
